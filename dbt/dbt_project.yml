@@ -18,19 +18,27 @@ clean-targets:
 
 models:
   qversity:
-    # Bronze layer - raw data staging
-    bronze:
-      +materialized: table
-      +schema: bronze
     # Silver layer - cleaned and transformed data
     silver:
       +materialized: table
       +schema: silver
-    # Gold layer - business-ready data marts
+      silver_cleaned_customers:
+        enabled: true
+      silver_qversity_engagement:
+        enabled: false
+
+    # Bronze layer - raw data models (Disabled here)
+    bronze:
+      bronze_qversity_interactions:
+        enabled: false
+
+    # Gold layer - business-ready data marts (Disabled here)
     gold:
-      +materialized: table
-      +schema: gold
+      gold_qversity_analytics:
+        enabled: false
 
 seeds:
   qversity:
     +schema: raw
+    mappings:
+      +enabled: true

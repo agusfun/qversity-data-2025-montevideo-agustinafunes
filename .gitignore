@@ -81,11 +81,12 @@ dbt_packages/
 # Data files (be careful with these)
 data/processed/
 data/temp/
-*.csv
+#*.csv
 *.parquet
 *.json
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+*.txt
 
 # Docker
 .dockerignore

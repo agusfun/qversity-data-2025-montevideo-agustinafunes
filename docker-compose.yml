@@ -26,6 +26,8 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./data:/opt/airflow/data
+      - ./notebooks:/opt/airflow/notebooks 
+      - ./dbt:/opt/airflow/dbt
     ports:
       - "8080:8080"
     command: >

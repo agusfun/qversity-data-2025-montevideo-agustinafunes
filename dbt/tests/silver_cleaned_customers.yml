@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: silver_cleaned_customers
+    description: "Cleaned and mapped customer data"
+    columns:
+      - name: cleaned_record_uuid
+        description: "Unique identifier for each cleaned record"
+        tests:
+          - not_null  # Ensures the value is not null
+          - unique    # Ensures there are no duplicate values
+      - name: cleaned_customer_id
+        description: "Mapped and cleaned customer ID"
+
+  - name: silver_exploded_payment_history
+    description: "One row per payment extracted from the payment_history JSON"
+    columns:
+      - name: cleaned_record_uuid
+        description: "Foreign key linking each payment to a customer"
+        tests:
+          - not_null  # Ensures every payment is linked to a customer
+      - name: payment_date
+        description: "Date of the payment"
+        tests:
+          - not_null  # Ensures the payment date is present
+      - name: payment_amount
+        description: "Amount paid in this record"
+        tests:
+          - not_null  # Ensures a payment amount exists
+
+  - name: silver_services_list
+    description: "List of services per customer"
+    columns:
+      - name: cleaned_record_uuid
+        description: "Foreign key linking services to a customer"
+        tests:
+          - not_null  # Ensures a customer is present
+      - name: services_list
+        description: "Comma-separated list of cleaned services"
+        tests:
+          - not_null  # Ensures at least one service exists

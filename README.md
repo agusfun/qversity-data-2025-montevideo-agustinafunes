@@ -1,5 +1,6 @@
 ## Project Structure
 
+```
 QVERSITY-DATA-FINAL-PROJECT-2025/
 ├── dags/                           # Airflow DAGs for pipeline orchestration
 │   ├── dag_bronze.py
@@ -42,20 +43,21 @@ QVERSITY-DATA-FINAL-PROJECT-2025/
 │
 ├── images/
 │   ├── silver_layer_ERD.png
-│   ├── gold_layer_ERD.png           # ERD for Gold Layer tables
+│   ├── gold_layer_ERD.png          # ERD for Gold Layer tables
 │
 ├── notebooks/
-│   ├── business_insights.sql        # Business Insights queries for Gold Layer
+│   ├── business_insights.sql       # Business Insights queries for Gold Layer
 │   ├── exploration_cleaned_data.sql
 │   ├── exploration_raw_data.sql
 │
 ├── .gitignore
-├── business_insights.md             # Business Insights results for Gold Layer
+├── business_insights.md            # Business Insights results for Gold Layer
 ├── docker-compose.yml
 ├── README.md
 ├── dbt_project.yml
 ├── profiles.yml
 ├── requirements.txt
+```
 
 ## All dbt commands are executed from the Airflow container since it already has the project mounted at `/opt/airflow/dbt` with access to models, seeds, and profiles. The standalone dbt container was not used to simplify configuration.
 

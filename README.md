@@ -1,160 +1,92 @@
-# Qversity Project
-
-A data local data platform using Docker Compose with Airflow, PostgreSQL, dbt, and Python.
-
-## Architecture
-
-This project implements a Bronze-Silver-Gold data lakehouse architecture:
-
-- **Bronze Layer**: Raw data ingestion and staging
-- **Silver Layer**: Cleaned and standardized data
-- **Gold Layer**: Business-ready analytics and aggregations
-
 ## Project Structure
 
-```
-/
-├── dags/                 # Airflow DAG definitions
-├── dbt/                  # dbt project
-│   ├── models/           # dbt models (bronze, silver, gold)
-│   │   ├── bronze/       # Raw data staging
-│   │   ├── silver/       # Cleaned data
-│   │   └── gold/         # Business analytics
-│   ├── tests/            # dbt tests
-│   ├── dbt_project.yml   # dbt configuration
-│   └── profiles.yml      # Database connections
-├── scripts/              # Setup and utility scripts
-├── data/                 # Data files
-│   ├── raw/              # Raw input data
-│   └── processed/        # Processed output data
-├── logs/                 # Application logs
-├── env.example           # Environment variables template
-├── .gitignore            # Python/SQL gitignore
-├── docker compose.yml    # Docker environment setup
-├── requirements.txt      # Python dependencies
-└── README.md             # This file
-```
+QVERSITY-DATA-FINAL-PROJECT-2025/
+├── dags/                           # Airflow DAGs for pipeline orchestration
+│   ├── dag_bronze.py
+│   ├── dag_gold.py
+│   ├── dag_pipeline.py
+│   ├── dag_silver.py
+│   ├── dag_tests.py
+│
+├── data/
+│   ├── raw/
+│       ├── mobile_customers_messy_dataset.json
+│
+├── dbt/
+│   ├── models/
+│       ├── bronze/
+│       ├── gold/
+│           ├── gold_acquisition_trends.sql
+│           ├── gold_customer_distribution_location.sql
+│           ├── gold_customer_summary.sql
+│           ├── gold_payment_behavior.sql
+│           ├── gold_revenue_summary.sql
+│           ├── gold_services_summary.sql
+│       ├── silver/
+│           ├── silver_cleaned_customers.sql
+│           ├── silver_customers_full.sql
+│           ├── silver_exploded_payment_history.sql
+│           ├── silver_services_list.sql
+│   ├── seeds/mappings/
+│       ├── city_country_mapping.csv
+│       ├── city_mapping.csv
+│       ├── country_mapping.csv
+│       ├── device_brand_mapping.csv
+│       ├── operator_mapping.csv
+│       ├── plan_type_mapping.csv
+│       ├── status_mapping.csv
+│
+├── tests/                          # dbt test configurations
+│   ├── gold_summary_tests.yml
+│   ├── silver_cleaned_customers_tests.yml
+│
+├── images/
+│   ├── silver_layer_ERD.png
+│   ├── gold_layer_ERD.png           # ERD for Gold Layer tables
+│
+├── notebooks/
+│   ├── business_insights.sql        # Business Insights queries for Gold Layer
+│   ├── exploration_cleaned_data.sql
+│   ├── exploration_raw_data.sql
+│
+├── .gitignore
+├── business_insights.md             # Business Insights results for Gold Layer
+├── docker-compose.yml
+├── README.md
+├── dbt_project.yml
+├── profiles.yml
+├── requirements.txt
 
-## Quick Start
+## All dbt commands are executed from the Airflow container since it already has the project mounted at `/opt/airflow/dbt` with access to models, seeds, and profiles. The standalone dbt container was not used to simplify configuration.
 
-### Prerequisites
-- Docker and Docker Compose installed
-- At least 4GB RAM available
+## Pipeline Overview
 
-### Setup
+- The **Bronze** layer ingests raw JSON data using Python and stores it in PostgreSQL.
+- The **Silver** layer applies cleaning, normalization, and JSON explosion using dbt and PostgreSQL functions.
+- The **Gold** layer generates curated, analysis-ready tables.
+- Tests are defined with dbt and executed via a dedicated Airflow DAG.
+- The pipeline is orchestrated by `dag_pipeline.py`, which chains all DAGs together. Running this DAG triggers the full process.
 
-1. **Clone and setup environment**:
-```bash
-# Copy environment template
-cp env.example .env
-```
+## Technical Notes
 
-2. **Manual setup** (alternative):
-```bash
-# Start services
-docker compose up -d
-```
+### Bronze Layer: JSON Ingestion
 
-## Access Points
+Python's `json.dumps()` was used to serialize nested arrays and dictionaries before inserting them into PostgreSQL. This ensures valid JSON storage and enables later use of functions like `jsonb_array_elements()`.
 
-- **Airflow UI**: http://localhost:8080 (admin/admin)
-- **PostgreSQL**: localhost:5432 (airflow/airflow)
+### Silver Layer: Exploding JSON
 
-## Common Commands
+Serialized JSON fields are cast to `jsonb`, validated as arrays, and exploded into individual rows using `jsonb_array_elements()`. Cleaning and validation are applied during this step.
 
-### Airflow
-```bash
-# View Airflow logs
-docker compose logs -f airflow
+An Entity-Relationship Diagram (ERD) of the Silver Layer tables is available in: `images/silver_layer_ERD.png`.
 
-# Trigger a DAG manually
-docker compose exec airflow airflow dags trigger hello_world_dag
-```
+### Silver Layer: Mapping Files
 
-### dbt
-```bash
-# Enter dbt container
-docker compose exec dbt bash
+CSV seeds provide lookups for country, city, operator, plan type, device brand, and status. This allows standardization of dirty or inconsistent real-world data without hardcoding cleaning logic.
 
-# Run all models
-dbt run
+## Gold Layer: Business Insights
 
-# Run specific layer
-dbt run --models bronze
-dbt run --models silver
-dbt run --models gold
+The SQL queries to answer business questions for the Gold Layer are located in: `notebooks/business_insights.sql`.
 
-# Test data quality
-dbt test
+The results of these queries are documented in: `business_insights.md`.
 
-# Generate documentation
-dbt docs generate
-dbt docs serve
-```
-
-### Database Access
-```bash
-# Connect to PostgreSQL
-docker compose exec postgres psql -U qversity-admin -d qversity
-
-# View created schemas
-\dn
-
-# View tables in bronze schema
-\dt bronze.*
-```
-
-## Testing
-
-```bash
-# Run dbt tests
-docker compose exec dbt dbt test
-
-# Run specific test
-docker compose exec dbt dbt test --models test_customer_email_validity
-```
-
-## Development
-
-### Adding New DAGs
-1. Create Python files in `dags/`
-2. DAGs will be automatically picked up by Airflow
-
-### Adding dbt Models
-1. Create SQL files in appropriate layer directories:
-   - `dbt/models/bronze/` for raw data
-   - `dbt/models/silver/` for cleaned data
-   - `dbt/models/gold/` for analytics
-
-### Environment Configuration
-- Copy `env.example` to `.env` and customize
-- Modify `docker compose.yml` for additional services
-
-## Monitoring
-
-```bash
-# View all service logs
-docker compose logs -f
-
-# View specific service logs
-docker compose logs -f airflow
-docker compose logs -f dbt
-docker compose logs -f postgres
-
-# Check service status
-docker compose ps
-```
-
-## Cleanup
-
-```bash
-# Stop services
-docker compose down
-
-# Remove volumes (⚠️ deletes all data)
-docker compose down -v
-
-# Remove images
-docker compose down --rmi all
-```
-
+An Entity-Relationship Diagram (ERD) of the Gold Layer tables is available in: `images/gold_layer_ERD.png`.

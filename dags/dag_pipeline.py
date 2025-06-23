@@ -29,10 +29,10 @@ with DAG(
         wait_for_completion=True
     )
 
-    # trigger_gold = TriggerDagRunOperator(
-    #     task_id='trigger_gold',
-    #     trigger_dag_id='dag_gold',
-    #     wait_for_completion=True
-    # )
+    trigger_gold = TriggerDagRunOperator(
+         task_id='trigger_gold',
+         trigger_dag_id='dag_gold',
+         wait_for_completion=True
+    )
 
-    trigger_bronze >> trigger_silver
+    trigger_bronze >> trigger_silver >> trigger_gold

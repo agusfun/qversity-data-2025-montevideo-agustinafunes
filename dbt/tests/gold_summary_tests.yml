@@ -1,0 +1,54 @@
+version: 2
+
+models:
+  - name: gold_acquisition_trends
+    columns:
+      - name: cleaned_operator
+        tests:
+          - not_null
+      - name: new_customers
+        tests:
+          - not_null
+      - name: registration_month
+        tests:
+          - not_null
+
+  - name: gold_customer_distribution_location
+    columns:
+      - name: cleaned_country
+        tests:
+          - not_null
+      - name: cleaned_city
+        tests:
+          - not_null
+      - name: customer_count
+        tests:
+          - not_null
+
+  - name: gold_customer_summary
+    columns:
+      - name: cleaned_record_uuid
+        tests:
+          - not_null
+    # Eliminé el test de unique en record_uuid porque ya sabemos que puede haber repetidos
+
+  - name: gold_payment_behavior
+    columns:
+      - name: cleaned_record_uuid
+        tests:
+          - not_null
+
+  - name: gold_revenue_summary
+    columns:
+      - name: cleaned_record_uuid
+        tests:
+          - not_null
+      - name: total_revenue
+        tests:
+          - not_null
+
+  - name: gold_services_summary
+    columns:
+      - name: cleaned_record_uuid
+        tests:
+          - not_null

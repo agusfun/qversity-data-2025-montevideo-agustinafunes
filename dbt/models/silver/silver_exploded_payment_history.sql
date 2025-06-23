@@ -1,7 +1,7 @@
--- silver_exploded_payment_history.sql
 -- This model explodes the `payment_history` JSONB column from the `silver_cleaned_customers` table,
 -- creating one row per payment.
--- Each row includes the `cleaned_record_uuid`, cleaned payment date, status, and amount.
+-- Each row includes the `cleaned_record_uuid`, cleaned payment date, status, and amount rounded to 2 decimals.
+-- Invalid or missing amounts default to 0.00.
 
 {{ config(
     materialized='table'
@@ -29,14 +29,14 @@ exploded as (
         -- Clean status
         initcap(nullif(trim(ph.value ->> 'status'), '')) as payment_status,
 
-        -- Clean amount, coalesced to 0 if null or invalid
-        coalesce(
-            case 
-                when (ph.value ->> 'amount') ~ '^\d+(\.\d+)?$'
-                then (ph.value ->> 'amount')::float
-                else null
-            end,
-            0
+        -- Clean amount: only cast if it's numeric, else 0.00
+        ROUND(
+            CASE 
+                WHEN (ph.value ->> 'amount') ~ '^[0-9]+(\.[0-9]+)?$'
+                    THEN (ph.value ->> 'amount')::numeric
+                ELSE 0.00
+            END, 
+            2
         ) as payment_amount
 
     from source s,

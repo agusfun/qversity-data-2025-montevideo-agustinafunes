@@ -103,6 +103,29 @@ mapped_city_country as (
 )
 
 -- Final select (deduplicated if needed)
-select *
-from mapped_city_country
-where cleaned_record_uuid is not null
+SELECT 
+    cleaned_record_uuid,
+    cleaned_customer_id,
+    cleaned_country_corrected AS cleaned_country,
+    cleaned_city,
+    cleaned_operator,
+    cleaned_plan_type,
+    cleaned_status,
+    cleaned_age,
+    cleaned_credit_score,
+    cleaned_device_brand,
+    cleaned_registration_date,
+    contracted_services,
+    payment_history,
+    cleaned_monthly_data_gb,
+    cleaned_monthly_bill_usd,
+    cleaned_device_model,
+    cleaned_last_payment_date,
+    cleaned_credit_limit,
+    cleaned_data_usage_current_month,
+    cleaned_latitude,
+    cleaned_longitude,
+    ingestion_timestamp,
+    data_origin
+FROM mapped_city_country
+WHERE cleaned_record_uuid IS NOT NULL
